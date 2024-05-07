@@ -11,16 +11,16 @@ pipeline {
                 bat 'mvn clean package'
                      }
         }
-         stage("Tomcat-dev"){
+        // stage("Tomcat-dev"){
             //  install SSH Agent plugin
-            steps {
-                sshagent(['tomcat-dev']) {
+          //  steps {
+            //    sshagent(['tomcat-dev']) {
                     // Copy war file to tomcat server
-                    bat 'scp -o StrictHostKeyChecking=no target/chatbot.war ec2-user@172.31.16.148:/opt/tomcat9/webapps'
-                    bat 'ssh ec2-user@172.31.16.148 /opt/tomcat9/bin/shutdown.sh'
-                    bat 'ssh ec2-user@172.31.16.148 /opt/tomcat9/bin/startup.sh'
-                    }
-                 }
-            }
+              //      bat 'scp -o StrictHostKeyChecking=no target/chatbot.war ec2-user@172.31.16.148:/opt/tomcat9/webapps'
+               //     bat 'ssh ec2-user@172.31.16.148 /opt/tomcat9/bin/shutdown.sh'
+               //     bat 'ssh ec2-user@172.31.16.148 /opt/tomcat9/bin/startup.sh'
+               //     }
+               //  }
+           // }
       }
 }
