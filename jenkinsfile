@@ -14,7 +14,7 @@ pipeline {
           stage("Tomcat-deploy"){
             //  install Publish over SSH plugin
              steps {
-                   sshagent(['tomcat-dev']) {
+                   sshagent(credentials: ['tomcat-dev']) {
                     // Copy war file to tomcat server
                       bat 'scp -o StrictHostKeyChecking=no target/devops-app.war ec2-user@172.31.16.148:/opt/tomcat9/webapps'
                       bat 'ssh ec2-user@172.31.16.148 /opt/tomcat9/bin/shutdown.sh'
