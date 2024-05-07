@@ -6,21 +6,29 @@ pipeline {
                 echo 'Hello World-Jenkins Pipeline'
             }
         }
-        stage("Maven Build"){
-                steps {
+        stage("Maven Build") {
+            steps {
                 bat 'mvn clean package'
-                     }
-        }
-          stage("Tomcat-deploy"){
-            //  install Publish over SSH plugin
-             steps {
-                   sshagent(['tomcat-dev']) {
-                    // Copy war file to tomcat server 
-                      bat 'scp -o StrictHostKeyChecking=no target/devops-app.war ec2-user@172.31.16.148:/opt/tomcat9/webapps'
-                      bat 'ssh ec2-user@172.31.16.148 /opt/tomcat9/bin/shutdown.sh'
-                      bat 'ssh ec2-user@172.31.16.148 /opt/tomcat9/bin/startup.sh'
-                      }
-                   }
             }
-      }
+        }
+        stage("Tomcat-deploy") {
+            steps {
+                script {
+                    // Copy war file to tomcat server 
+                    withCredentials([sshUserPrivateKey(credentialsId: 'tomcat-dev', keyFileVariable: 'SSH_KEY')]) {
+                        // Define the SSH command
+                        def sshCommand = "scp -o StrictHostKeyChecking=no -i $SSH_KEY target/devops-app.war ec2-user@172.31.16.148:/opt/tomcat9/webapps"
+                        
+                        // Execute the SSH command
+                        bat sshCommand
+                    }
+
+                    // Restart Tomcat server
+                    sshagent(credentials: ['tomcat-dev']) {
+                        bat 'ssh ec2-user@172.31.16.148 "/opt/tomcat9/bin/shutdown.sh && /opt/tomcat9/bin/startup.sh"'
+                    }
+                }
+            }
+        }
+    }
 }
