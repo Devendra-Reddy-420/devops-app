@@ -17,7 +17,7 @@ pipeline {
                     // Copy war file to tomcat server 
                     withCredentials([sshUserPrivateKey(credentialsId: 'tomcat-dev', keyFileVariable: 'SSH_KEY')]) {
                         // Define the SSH command
-                        def sshCommand = "scp -o StrictHostKeyChecking=no -i $SSH_KEY target/devops-app.war ec2-user@172.31.16.148:/opt/tomcat9/webapps"
+                        def sshCommand = "scp -o StrictHostKeyChecking=no -i $SSH_KEY target/devops-app.war ec2-user@54.163.43.2:/opt/tomcat9/webapps"
                         
                         // Execute the SSH command
                         bat sshCommand
@@ -25,7 +25,7 @@ pipeline {
 
                     // Restart Tomcat server
                     sshagent(credentials: ['tomcat-dev']) {
-                        bat 'ssh ec2-user@172.31.16.148 "/opt/tomcat9/bin/shutdown.sh && /opt/tomcat9/bin/startup.sh"'
+                        bat 'ssh ec2-user@54.163.43.2 "/opt/tomcat9/bin/shutdown.sh && /opt/tomcat9/bin/startup.sh"'
                     }
                 }
             }
