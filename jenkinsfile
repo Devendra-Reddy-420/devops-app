@@ -1,38 +1,29 @@
 pipeline {
     agent any
-    
     environment {
+        TOMCAT_SERVER = '172.31.23.121'
         TOMCAT_USER = 'ec2-user'
-        TOMCAT_HOST = '54.147.25.212'
-        TOMCAT_DIR = '/opt/tomcat9/webapps'
+        TOMCAT_DIR = '/opt/tomcat9'
+        WAR_FILE = 'devops-app.war'
     }
-    
     stages {
-        stage('Build') {
+        stage('Hello') {
             steps {
-                bat 'mvn clean package'
+                echo 'Hello World-Jenkins Pipeline'
             }
         }
-        
-        stage('Deploy to Tomcat') {
+        stage("Maven Build"){
             steps {
-                script {
-                    // Copy the WAR file to the EC2 instance
-                    def remoteDir = "${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_DIR}"
-                    publishOverSSH(configName: 'tomcat-dev', transferSetups: [
-                        [
-                            execCommand: 'scp -r -o StrictHostKeyChecking=no -P 22 target/devops-app.war ' + remoteDir,
-                            execTimeout: 30000
-                        ],
-                        [
-                            execCommand: "ssh -o StrictHostKeyChecking=no -p 22 ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/shutdown.sh",
-                            execTimeout: 30000
-                        ],
-                        [
-                            execCommand: "ssh -o StrictHostKeyChecking=no -p 22 ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/startup.sh",
-                            execTimeout: 30000
-                        ]
-                    ])
+                sh 'mvn clean package'
+            }
+        }
+        stage("Tomcat-dev"){
+            steps {
+                sshagent(['tomcat-dev']) {
+                    // Copy war file to tomcat dev server
+                    sh "scp -o StrictHostKeyChecking=no target/${WAR_FILE} ${TOMCAT_USER}@${TOMCAT_SERVER}:${TOMCAT_DIR}/webapps"
+                    sh "ssh ${TOMCAT_USER}@${TOMCAT_SERVER} ${TOMCAT_DIR}/bin/shutdown.sh"
+                    sh "ssh ${TOMCAT_USER}@${TOMCAT_SERVER} ${TOMCAT_DIR}/bin/startup.sh"
                 }
             }
         }
