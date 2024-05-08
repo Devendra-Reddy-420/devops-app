@@ -1,26 +1,30 @@
 pipeline {
     agent any
+    
+    environment {
+        TOMCAT_USER = 'ec2-user'
+        TOMCAT_HOST = '54.147.25.212'
+        TOMCAT_DIR = '/opt/tomcat9/webapps'
+    }
+    
     stages {
-        stage('Hello') {
+        stage('Build') {
             steps {
-                echo 'Hello World-Jenkins Pipeline'
-            }
+                bat 'mvn clean package'
+                  }
         }
-        stage("Maven Build"){
+        
+            stage('Deploy to Tomcat') {
                 steps {
-                sh 'mvn clean package'
-                     }
-        }
-         stage("Tomcat-dev"){
-            //  install SSH Agent plugin
-            steps {
-                sshagent(['tomcat-dev']) {
-                    // Copy war file to tomcat dev server
-                    sh "scp -o StrictHostKeyChecking=no target/devops-app.war ec2-user@172.31.30.26:/opt/tomcat9/webapps"
-                    sh "ssh ec2-user@172.31.30.26 /opt/tomcat9/bin/shutdown.sh"
-                    sh "ssh ec2-user@172.31.30.26 /opt/tomcat9/bin/startup.sh"
-                    }
-                 }
+                    sshagent(credentials: ['tomcat-dev']) {
+                    // Copy the WAR file to the EC2 instance
+                    bat 'scp target/devops-app.war ${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_DIR}'
+                    
+                    // Restart Tomcat (optional)
+                    bat 'ssh ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/shutdown.sh'
+                    bat 'ssh ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/startup.sh'
+                }
             }
-      }
+        }
+    }
 }
