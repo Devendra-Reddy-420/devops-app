@@ -19,8 +19,6 @@ pipeline {
                     sshagent(credentials: ['tomcat-dev']) {
                     // Copy the WAR file to the EC2 instance
                     bat 'scp target/devops-app.war ${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_DIR}'
-                    
-                    // Restart Tomcat (optional)
                     bat 'ssh ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/shutdown.sh'
                     bat 'ssh ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/startup.sh'
                 }
