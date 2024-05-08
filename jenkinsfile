@@ -19,7 +19,7 @@ pipeline {
                 script {
                     // Copy the WAR file to the EC2 instance
                     def remoteDir = "${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_DIR}"
-                    publishOverSSH(configName: 'YourSSHConfig', transferSetups: [
+                    publishOverSSH(configName: 'tomcat-dev', transferSetups: [
                         [
                             execCommand: 'scp -r -o StrictHostKeyChecking=no -P 22 target/devops-app.war ' + remoteDir,
                             execTimeout: 30000
