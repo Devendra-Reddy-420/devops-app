@@ -11,16 +11,28 @@ pipeline {
         stage('Build') {
             steps {
                 bat 'mvn clean package'
-                  }
+            }
         }
         
-            stage('Deploy to Tomcat') {
-                steps {
-                    sshagent(credentials: ['tomcat-dev']) {
+        stage('Deploy to Tomcat') {
+            steps {
+                script {
                     // Copy the WAR file to the EC2 instance
-                    bat 'scp target/devops-app.war ${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_DIR}'
-                    bat 'ssh ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/shutdown.sh'
-                    bat 'ssh ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/startup.sh'
+                    def remoteDir = "${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_DIR}"
+                    publishOverSSH(configName: 'YourSSHConfig', transferSetups: [
+                        [
+                            execCommand: 'scp -r -o StrictHostKeyChecking=no -P 22 target/devops-app.war ' + remoteDir,
+                            execTimeout: 30000
+                        ],
+                        [
+                            execCommand: "ssh -o StrictHostKeyChecking=no -p 22 ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/shutdown.sh",
+                            execTimeout: 30000
+                        ],
+                        [
+                            execCommand: "ssh -o StrictHostKeyChecking=no -p 22 ${TOMCAT_USER}@${TOMCAT_HOST} /opt/tomcat9/bin/startup.sh",
+                            execTimeout: 30000
+                        ]
+                    ])
                 }
             }
         }
