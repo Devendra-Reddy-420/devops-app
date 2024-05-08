@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        TOMCAT_SERVER = '172.31.23.121'
+        TOMCAT_SERVER = '172.31.26.51'
         TOMCAT_USER = 'ec2-user'
         TOMCAT_DIR = '/opt/tomcat9'
         WAR_FILE = 'devops-app.war'
